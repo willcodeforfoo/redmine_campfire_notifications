@@ -18,7 +18,7 @@ class NotifierHook < Redmine::Hook::ViewListener
     @project = context[:project]
     @issue = context[:issue]
     @user = @issue.author
-    speak "#{@user.firstname} created issue “#{@issue.subject}”. Comment: “#{truncate_words(@issue.description)}” http://#{Setting.host_name}/issues/#{@issue.id}"
+    speak "#{@user.firstname} created issue ##{@issue.id} #{@issue.subject}: “#{truncate_words(@issue.description)}” http://#{Setting.host_name}/issues/#{@issue.id}"
   end
   
   def controller_issues_edit_after_save(context = { })
@@ -26,7 +26,7 @@ class NotifierHook < Redmine::Hook::ViewListener
     @issue = context[:issue]
     @journal = context[:journal]
     @user = @journal.user
-    speak "#{@user.firstname} edited issue “#{@issue.subject}”. Comment: “#{truncate_words(@journal.notes)}”. http://#{Setting.host_name}/issues/#{@issue.id}"
+    speak "#{@user.firstname} edited issue ##{@issue.id} #{@issue.subject}: “#{truncate_words(@journal.notes)}” http://#{Setting.host_name}/issues/#{@issue.id}"
   end
 
   def controller_messages_new_after_save(context = { })
@@ -67,7 +67,9 @@ private
       request.basic_auth(@@token, "X")
       request.body = json
 
-      http.request(request)
+      response = http.request(request)
+
+      RAILS_DEFAULT_LOGGER.info(response.inspect)
     rescue => e
       RAILS_DEFAULT_LOGGER.error "Error during Campfire notification: #{e.message}"
     end
