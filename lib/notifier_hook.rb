@@ -1,6 +1,6 @@
 require 'tinder'
 
-class NotifierHook < Redmine::Hook::Listener
+class NotifierHook < Redmine::Hook::ViewListener
   @@subdomain = nil
   @@token     = nil
   @@room      = nil
