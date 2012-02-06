@@ -56,7 +56,7 @@ private
       room = campfire.find_room_by_name(@@room)
       room.speak message
     rescue => e
-      logger.error "Error during campfire notification: #{e.message}"
+      RAILS_DEFAULT_LOGGER.error "Error during campfire notification: #{e.message}"
     end
   end
 
