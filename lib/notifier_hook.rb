@@ -1,15 +1,17 @@
-require 'tinder'
+require 'net/http'
+require 'net/https'
+require 'json'
 
 class NotifierHook < Redmine::Hook::ViewListener
   @@subdomain = nil
   @@token     = nil
-  @@room      = nil
+  @@room_id   = nil
 
   def self.load_options
     options = YAML::load( File.open(File.join(Rails.root, 'config', 'campfire.yml')) )
     @@subdomain = options[Rails.env]['subdomain']
     @@token = options[Rails.env]['token']
-    @@room = options[Rails.env]['room']
+    @@room_id = options[Rails.env]['room_id']
   end
 
   def controller_issues_new_after_save(context = { })
@@ -50,13 +52,24 @@ class NotifierHook < Redmine::Hook::ViewListener
 
 private
   def speak(message)
-    NotifierHook.load_options unless @@subdomain && @@token && @@room
+    NotifierHook.load_options unless @@subdomain && @@token && @@room_id
     begin
-      campfire = Tinder::Campfire.new @@subdomain, :token => @@token
-      room = campfire.find_room_by_name(@@room)
-      room.speak message
+      path = "/room/#{@@room_id}/speak.json"
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+      json = JSON.generate({ :message => message })
+
+      http = Net::HTTP.new("#{@@subdomain}.campfirenow.com", 443)
+      http.use_ssl = true
+
+      request = Net::HTTP::Post.new(path, headers)
+      request.basic_auth(@@token, "X")
+      request.body = json
+
+      http.request(request)
     rescue => e
-      RAILS_DEFAULT_LOGGER.error "Error during campfire notification: #{e.message}"
+      RAILS_DEFAULT_LOGGER.error "Error during Campfire notification: #{e.message}"
     end
   end
 

@@ -1,9 +1,9 @@
 production:
   subdomain:  campfire_subdomain
   token:      campfire_token
-  room:       campfire_roomname
+  room_id:    campfire_room_id
 
 development:
   subdomain:  campfire_subdomain
   token:      campfire_token
-  room:       campfire_roomname
+  room_id:    campfire_room_id
